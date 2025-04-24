@@ -1,0 +1,528 @@
+:root {
+    --primary-color: #007bff;
+    --secondary-color: #6c757d;
+    --success-color: #28a745; /* Зеленый для выходных данных */
+    --info-color: #17a2b8;    /* Синий для входных данных */
+    --warning-color: #ffc107;
+    --light-color: #f8f9fa;
+    --dark-color: #343a40;
+    --bg-color: #f4f7f9;
+    --block-bg: #ffffff;
+    --border-color: #e1e4e8;
+    --shadow-color: rgba(0, 0, 0, 0.08);
+    --arrow-color: #a0a0a0;
+    --arrow-label-bg: #e9ecef;
+    --code-bg: #f1f1f1;
+    --code-border: #d1d5da;
+    --code-text: #24292e;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    background-color: var(--bg-color);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px;
+    min-height: 100vh;
+    color: var(--dark-color);
+}
+
+.controls {
+    width: 100%;
+    max-width: 900px;
+    margin-bottom: 20px;
+    display: flex;
+    gap: 10px;
+}
+
+.controls select, .controls button {
+    padding: 8px 12px;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    background-color: var(--block-bg);
+    font-size: 14px;
+}
+
+.controls button {
+    cursor: pointer;
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+}
+
+.controls button:hover {
+    background-color: #0069d9;
+}
+
+.diagram-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    max-width: 900px;
+}
+
+.block {
+    background-color: var(--block-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 25px 30px;
+    margin-bottom: 20px;
+    text-align: left;
+    box-shadow: 0 4px 12px var(--shadow-color);
+    width: 95%;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.block.interactive {
+    cursor: pointer;
+}
+
+.block:hover {
+    transform: translateY(-3px) scale(1.01);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+}
+
+.block-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.block-icon {
+    font-size: 1.8em;
+    margin-right: 15px;
+    color: var(--primary-color);
+    width: 40px;
+    text-align: center;
+}
+
+.block h3 {
+    margin: 0;
+    color: var(--primary-color);
+    font-size: 1.2em;
+    font-weight: 600;
+}
+
+.block h3 .component-name {
+    color: var(--info-color);
+    font-weight: 700;
+}
+
+.block p {
+    margin: 8px 0 0 0;
+    font-size: 0.95em;
+    color: #555;
+    line-height: 1.6;
+}
+
+.block code {
+    background-color: var(--code-bg);
+    padding: 3px 8px;
+    border-radius: 6px;
+    font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, Courier, monospace;
+    color: var(--code-text);
+    font-size: 0.9em;
+    border: 1px solid var(--code-border);
+    word-break: break-word;
+}
+
+.block pre code {
+    display: block;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    padding: 10px 15px;
+    margin-top: 8px;
+    margin-bottom: 8px;
+    overflow-x: auto;
+    font-size: 0.85em;
+    border-radius: 6px;
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.details {
+    margin-top: 15px;
+    padding-top: 15px;
+    border-top: 1px dashed var(--border-color);
+    max-height: 0;
+    opacity: 0;
+    transition: max-height 0.8s ease-out, opacity 0.5s ease-out 0.3s;
+    font-size: 0.9em;
+    overflow: hidden;
+}
+
+.block.expanded .details {
+    max-height: 2000px;
+    opacity: 1;
+}
+
+.details strong {
+    color: var(--secondary-color);
+    display: block;
+    margin-bottom: 5px;
+}
+
+.details ul {
+    margin-top: 5px;
+    padding-left: 20px;
+    list-style: none;
+    margin-bottom: 15px;
+}
+
+.details li::before {
+    content: "•";
+    color: var(--primary-color);
+    font-weight: bold;
+    display: inline-block;
+    width: 1em;
+    margin-left: -1em;
+}
+
+.received-data,
+.return-value {
+    margin-top: 20px;
+    padding-top: 15px;
+}
+
+.received-data {
+    border-top: 1px solid var(--info-color);
+}
+
+.received-data strong {
+    color: var(--info-color);
+    font-size: 1.1em;
+}
+
+.return-value {
+    border-top: 1px solid var(--success-color);
+}
+
+.return-value strong {
+    color: var(--success-color);
+    font-size: 1.1em;
+}
+
+.arrow-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 20px;
+    width: 100%;
+    transition: opacity 0.3s ease;
+}
+
+.arrow-line {
+    width: 4px;
+    height: 45px;
+    margin: 5px auto;
+    background: linear-gradient(to bottom, #a0aec0, #e2e8f0);
+    border-radius: 2px;
+    transition: background 0.3s ease;
+}
+
+.arrow {
+    width: 0;
+    height: 0;
+    border-style: solid;
+    border-width: 14px 11px 0 11px;
+    border-color: #a0aec0 transparent transparent transparent;
+    transition: border-color 0.3s ease;
+}
+
+.arrow-label {
+    font-size: 0.85em;
+    font-style: italic;
+    color: #4a5568;
+    padding: 6px 12px;
+    background-color: var(--arrow-label-bg);
+    border-radius: 15px;
+    max-width: 80%;
+    text-align: center;
+    border: 1px solid var(--border-color);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.arrow-container:hover .arrow-line {
+    background: linear-gradient(to bottom, var(--success-color), #a7d7a9);
+}
+
+.arrow-container:hover .arrow {
+    border-color: var(--success-color) transparent transparent transparent;
+}
+
+.arrow-container:hover .arrow-label {
+    background-color: #d4edda;
+    color: #155724;
+}
+
+.block.interactive::after {
+    content: '\f078';
+    font-family: 'Font Awesome 6 Free';
+    font-weight: 900;
+    position: absolute;
+    top: 25px;
+    right: 30px;
+    font-size: 1em;
+    color: var(--secondary-color);
+    transition: transform 0.4s ease;
+}
+
+.block.interactive.expanded::after {
+    transform: rotate(180deg);
+}
+
+.loading {
+    padding: 30px;
+    font-style: italic;
+    color: var(--secondary-color);
+}
+
+/* Стили для редактора потока данных */
+.creator-panel {
+    margin-top: 30px;
+    background-color: var(--block-bg);
+    border-radius: 12px;
+    padding: 30px;
+    box-shadow: 0 4px 12px var(--shadow-color);
+    width: 100%;
+    max-width: 900px;
+}
+
+.creator-panel h3 {
+    margin-bottom: 20px;
+    color: var(--primary-color);
+}
+
+.creator-panel h4 {
+    margin: 20px 0 10px 0;
+    color: var(--secondary-color);
+    padding-bottom: 5px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.form-group {
+    margin-bottom: 15px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 500;
+    color: var(--dark-color);
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+.form-group textarea {
+    min-height: 100px;
+    resize: vertical;
+}
+
+.form-group textarea[id="input-data"],
+.form-group textarea[id="output-data"] {
+    min-height: 150px;
+    font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, Courier, monospace;
+}
+
+button[type="submit"],
+button[type="button"] {
+    padding: 10px 20px;
+    margin-right: 10px;
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background-color 0.3s ease;
+}
+
+button[type="submit"]:hover,
+button[type="button"]:hover {
+    background-color: #0069d9;
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+    .block {
+        width: 100%;
+        padding: 15px 20px;
+    }
+    
+    .arrow-label {
+        max-width: 100%;
+    }
+    
+    .creator-panel {
+        padding: 15px;
+    }
+}
+
+/* Стили для встроенного редактирования блоков */
+.inline-edit-form {
+    padding: 15px;
+}
+
+.inline-edit-form .form-group {
+    margin-bottom: 15px;
+}
+
+.inline-edit-form label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 500;
+    color: #555;
+}
+
+.inline-edit-form input,
+.inline-edit-form textarea,
+.inline-edit-form select {
+    width: 100%;
+    padding: 8px 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-family: inherit;
+    font-size: 14px;
+}
+
+.inline-edit-form textarea {
+    min-height: 80px;
+    resize: vertical;
+}
+
+.inline-edit-form h4 {
+    margin: 20px 0 10px;
+    padding-bottom: 5px;
+    border-bottom: 1px solid #eee;
+    color: #444;
+}
+
+.inline-edit-header {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 15px;
+}
+
+.inline-edit-header .form-group {
+    flex: 1;
+}
+
+.inline-edit-buttons {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 20px;
+    gap: 10px;
+}
+
+.inline-save-button,
+.inline-cancel-button {
+    padding: 8px 15px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: background-color 0.2s;
+}
+
+.inline-save-button {
+    background-color: #4a90e2;
+    color: white;
+}
+
+.inline-save-button:hover {
+    background-color: #3a7bc8;
+}
+
+.inline-cancel-button {
+    background-color: #888;
+    color: white;
+}
+
+.inline-cancel-button:hover {
+    background-color: #666;
+}
+
+.block.being-edited {
+    border: 2px solid #4a90e2;
+    box-shadow: 0 0 15px rgba(74, 144, 226, 0.3);
+    padding: 20px;
+    transition: all 0.3s ease;
+    max-width: none;
+    width: calc(100% - 40px);
+    z-index: 10;
+    position: relative;
+}
+
+.block.being-edited .block-controls {
+    display: none;
+}
+
+.inline-edit-input, 
+.inline-edit-output {
+    background-color: #f9f9f9;
+    padding: 15px;
+    border-radius: 4px;
+    margin-top: 15px;
+}
+
+.inline-edit-input {
+    border-left: 3px solid var(--info-color);
+}
+
+.inline-edit-output {
+    border-left: 3px solid var(--success-color);
+}
+
+/* Дополнительные стили для встроенного редактирования */
+.inline-edit-form input:focus,
+.inline-edit-form textarea:focus,
+.inline-edit-form select:focus {
+    outline: none;
+    border-color: #4a90e2;
+    box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.2);
+}
+
+.inline-edit-form .form-group label {
+    font-size: 0.9em;
+    color: #666;
+}
+
+/* Анимация при редактировании */
+@keyframes pulse-border {
+    0% { border-color: #4a90e2; }
+    50% { border-color: #74b9ff; }
+    100% { border-color: #4a90e2; }
+}
+
+.block.being-edited {
+    animation: pulse-border 2s infinite ease-in-out;
+}
+
+/* Визуальные улучшения для полей ввода */
+.inline-edit-input textarea, 
+.inline-edit-output textarea {
+    min-height: 120px;
+    font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, Courier, monospace;
+    font-size: 0.9em;
+    line-height: 1.4;
+} 

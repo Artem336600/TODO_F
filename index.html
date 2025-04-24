@@ -1,0 +1,650 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Интерактивный Поток Данных</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/styles.css">
+    <style>
+        :root {
+            --primary-color: #007bff;
+            --secondary-color: #6c757d;
+            --success-color: #28a745; /* Green for Output */
+            --warning-color: #ffc107;
+            --danger-color: #dc3545; /* Red for delete button */
+            --info-color: #17a2b8;     /* Blue for Input */
+            --light-color: #f8f9fa;
+            --dark-color: #343a40;
+            --bg-color: #f4f7f9;
+            --block-bg: #ffffff;
+            --border-color: #e1e4e8;
+            --shadow-color: rgba(0, 0, 0, 0.08);
+            --arrow-color: #a0a0a0;
+            --arrow-label-bg: #e9ecef;
+            --code-bg: #f1f1f1;
+            --code-border: #d1d5da;
+            --code-text: #24292e;
+        }
+
+        /* ... (Basic styles for body, diagram-container, block, headers, etc. - SAME AS BEFORE) ... */
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background-color: var(--bg-color);
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            padding: 40px 20px;
+            min-height: 100vh;
+            box-sizing: border-box;
+            color: var(--dark-color);
+        }
+
+        .diagram-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            max-width: 900px; /* Even wider for double examples */
+        }
+
+        .block {
+            background-color: var(--block-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 25px 30px;
+            margin-bottom: 20px;
+            text-align: left;
+            box-shadow: 0 4px 12px var(--shadow-color);
+            width: 95%;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .block.interactive {
+             cursor: pointer;
+        }
+
+        .block:hover {
+            transform: translateY(-3px) scale(1.01);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+        }
+
+        .block-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .block-icon {
+            font-size: 1.8em;
+            margin-right: 15px;
+            color: var(--primary-color);
+            width: 40px;
+            text-align: center;
+        }
+
+        .block h3 {
+            margin: 0;
+            color: var(--primary-color);
+            font-size: 1.2em;
+            font-weight: 600;
+        }
+         .block h3 .component-name {
+             color: var(--info-color);
+             font-weight: 700;
+         }
+
+
+        .block p {
+            margin: 8px 0 0 0;
+            font-size: 0.95em;
+            color: #555;
+            line-height: 1.6;
+        }
+
+        .block code {
+            background-color: var(--code-bg);
+            padding: 3px 8px;
+            border-radius: 6px;
+            font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, Courier, monospace;
+            color: var(--code-text);
+            font-size: 0.9em;
+            border: 1px solid var(--code-border);
+            word-break: break-word; /* Allow breaking long words/tokens */
+        }
+         .block pre code {
+            display: block;
+            white-space: pre-wrap; /* Wrap long lines */
+            word-wrap: break-word; /* Ensure wrapping */
+            padding: 10px 15px;
+            margin-top: 8px;
+            margin-bottom: 8px;
+            overflow-x: auto; /* Still allow horizontal scroll if needed */
+            font-size: 0.85em;
+            border-radius: 6px;
+            max-height: 400px; /* Limit height of code blocks */
+            overflow-y: auto; /* Add vertical scroll if needed */
+         }
+
+
+        .details {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px dashed var(--border-color);
+            max-height: 0;
+            opacity: 0;
+            transition: max-height 0.8s ease-out, opacity 0.5s ease-out 0.3s; /* Slower transition */
+            font-size: 0.9em;
+            overflow: hidden;
+        }
+
+        .block.expanded .details {
+            max-height: 2000px; /* Generous max-height */
+            opacity: 1;
+        }
+
+        .details strong {
+             color: var(--secondary-color);
+             display: block;
+             margin-bottom: 5px;
+        }
+        .details ul {
+             margin-top: 5px;
+             padding-left: 20px;
+             list-style: none;
+             margin-bottom: 15px;
+         }
+        .details li::before {
+            content: "•";
+            color: var(--primary-color);
+            font-weight: bold;
+            display: inline-block;
+            width: 1em;
+            margin-left: -1em;
+        }
+
+        .received-data,
+        .return-value {
+             margin-top: 20px;
+             padding-top: 15px;
+        }
+        .received-data {
+             border-top: 1px solid var(--info-color); /* Blue border for input */
+        }
+         .received-data strong {
+             color: var(--info-color); /* Blue title */
+             font-size: 1.1em;
+         }
+
+        .return-value {
+             border-top: 1px solid var(--success-color); /* Green border for output */
+        }
+         .return-value strong {
+             color: var(--success-color); /* Green title */
+             font-size: 1.1em;
+         }
+
+
+        /* ... (Arrow styles - SAME AS BEFORE) ... */
+         .arrow-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 20px;
+            width: 100%;
+            transition: opacity 0.3s ease;
+        }
+
+        .arrow-line {
+             width: 4px;
+             height: 45px;
+             margin: 5px auto;
+             background: linear-gradient(to bottom, #a0aec0, #e2e8f0);
+             border-radius: 2px;
+             transition: background 0.3s ease;
+        }
+
+        .arrow {
+            width: 0;
+            height: 0;
+            border-style: solid;
+            border-width: 14px 11px 0 11px;
+            border-color: #a0aec0 transparent transparent transparent;
+            transition: border-color 0.3s ease;
+        }
+
+        .arrow-label {
+            font-size: 0.85em;
+            font-style: italic;
+            color: #4a5568;
+            padding: 6px 12px;
+            background-color: var(--arrow-label-bg);
+            border-radius: 15px;
+            max-width: 80%;
+            text-align: center;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        .arrow-container:hover .arrow-line {
+             background: linear-gradient(to bottom, var(--success-color), #a7d7a9);
+        }
+        .arrow-container:hover .arrow {
+             border-color: var(--success-color) transparent transparent transparent;
+        }
+        .arrow-container:hover .arrow-label {
+             background-color: #d4edda;
+             color: #155724;
+        }
+
+        /* ... (Note and Final Output styles - SAME AS BEFORE, except Final Output needs received data) ... */
+        .note {
+            font-size: 0.9em;
+            color: var(--secondary-color);
+            margin-top: 30px;
+            border-left: 4px solid var(--info-color);
+            padding: 15px 20px;
+            text-align: left;
+            width: 95%;
+            background-color: #e6f7ff;
+            border-radius: 0 8px 8px 0;
+        }
+        .note strong {
+            color: var(--info-color);
+            display: inline;
+            margin-bottom: 0;
+        }
+
+        .final-output {
+            border-color: var(--warning-color);
+            background-color: #fffaf0;
+        }
+        .final-output .block-icon,
+        .final-output h3 {
+            color: var(--warning-color);
+        }
+        .final-output .details li::before {
+            color: var(--warning-color);
+        }
+        /* Final block has received data, but no return value section */
+        .final-output .return-value {
+             display: none;
+        }
+
+
+        /* ... (Toggle icon styles - SAME AS BEFORE) ... */
+        .block.interactive::after {
+            content: '\f078'; /* chevron-down */
+            font-family: 'Font Awesome 6 Free';
+            font-weight: 900;
+            position: absolute;
+            top: 25px;
+            right: 30px;
+            font-size: 1em;
+            color: var(--secondary-color);
+            transition: transform 0.4s ease;
+        }
+
+        .block.interactive.expanded::after {
+            transform: rotate(180deg);
+        }
+
+        /* Стили для блоков и контролов */
+        .block-controls {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            display: flex;
+            opacity: 0;
+            transition: opacity 0.3s;
+            z-index: 2;
+        }
+        
+        .block:hover .block-controls {
+            opacity: 1;
+        }
+        
+        .edit-block, .delete-block {
+            padding: 5px 8px;
+            margin-left: 5px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.2s;
+        }
+        
+        .edit-block {
+            background-color: #4a90e2;
+            color: white;
+        }
+        
+        .edit-block:hover {
+            background-color: #357bd8;
+        }
+        
+        .delete-block {
+            background-color: #e25555;
+            color: white;
+        }
+        
+        .delete-block:hover {
+            background-color: #c53030;
+        }
+        
+        /* Стили для блоков в режиме редактирования */
+        .block.being-edited {
+            border: 2px solid #4a90e2;
+            box-shadow: 0 0 15px rgba(74, 144, 226, 0.5);
+        }
+        
+        /* Стили для создания блоков */
+        .creator-panel.edit-mode {
+            background-color: #f0f7ff;
+            border-left: 4px solid #4a90e2;
+        }
+        
+        /* Стили для кнопки отмены редактирования */
+        #cancel-edit-button {
+            margin-left: 10px;
+            background-color: #888;
+        }
+        
+        #cancel-edit-button:hover {
+            background-color: #666;
+        }
+        
+        /* Стили для уведомлений */
+        .notification {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            padding: 12px 20px;
+            border-radius: 5px;
+            color: white;
+            font-weight: 500;
+            max-width: 400px;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
+            transform: translateY(100px);
+            opacity: 0;
+            transition: transform 0.3s, opacity 0.3s;
+            z-index: 1000;
+        }
+        
+        .notification.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+        
+        .notification.success {
+            background-color: #4caf50;
+        }
+        
+        .notification.error {
+            background-color: #f44336;
+        }
+        
+        .notification.info {
+            background-color: #2196f3;
+        }
+        
+        .notification i {
+            margin-right: 8px;
+        }
+        
+        /* Подтверждение удаления */
+        .delete-confirmation {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+        }
+        
+        /* Стили для режима редактирования */
+        #creator-panel.edit-mode {
+            background-color: #f1f8e9;
+            border-left: 5px solid #4CAF50;
+        }
+        
+        #form-title {
+            font-size: 1.5em;
+            margin-bottom: 15px;
+            color: #333;
+        }
+        
+        #cancel-edit {
+            background-color: #9e9e9e;
+            margin-left: 10px;
+            display: none;
+        }
+        
+        #cancel-edit:hover {
+            background-color: #757575;
+        }
+        
+        /* Скрытое поле для хранения ID редактируемого блока */
+        #edit-block-id {
+            display: none;
+        }
+
+        /* Модальное окно для вставки JSON */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+
+        .modal-content {
+            background-color: var(--block-bg);
+            margin: 5% auto;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+            width: 80%;
+            max-width: 800px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .modal-header h2 {
+            margin: 0;
+            color: var(--primary-color);
+        }
+
+        .close-modal {
+            color: var(--secondary-color);
+            font-size: 24px;
+            cursor: pointer;
+        }
+
+        .close-modal:hover {
+            color: var(--primary-color);
+        }
+
+        #json-input {
+            width: 100%;
+            min-height: 300px;
+            font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, Courier, monospace;
+            padding: 15px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            resize: vertical;
+        }
+
+        .json-controls {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+
+        .json-error {
+            color: #dc3545;
+            margin-top: 10px;
+            font-size: 0.9em;
+            display: none;
+        }
+        
+        /* Стили для режима редактирования */
+        .creator-panel.edit-mode h3 {
+            color: var(--info-color);
+        }
+        
+        .creator-panel.edit-mode button[type="submit"] {
+            background-color: var(--info-color);
+        }
+        
+        .creator-panel.edit-mode #cancel-edit {
+            background-color: var(--secondary-color);
+            color: white;
+            margin-right: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="controls">
+        <select id="flow-selector">
+            <option value="simple">Простой пример</option>
+            <option value="complex">Сложный пример</option>
+            <option value="custom">Загрузить свой JSON</option>
+        </select>
+        <input type="file" id="json-file" accept=".json" style="display: none;">
+        <button id="upload-json" style="display: none;">Загрузить JSON</button>
+        <button id="paste-json">Вставить JSON</button>
+    </div>
+
+    <div class="diagram-container" id="diagram">
+        <!-- Сюда будет загружаться диаграмма из JSON -->
+        <div class="loading">Выберите пример потока данных...</div>
+    </div>
+
+    <div class="creator-panel" id="creator-panel">
+        <h3 id="form-title">Создание нового блока</h3>
+        <form id="block-form">
+            <div class="form-group">
+                <label for="block-id">ID блока:</label>
+                <input type="text" id="block-id" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="block-title">Название блока:</label>
+                <input type="text" id="block-title" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="block-icon">Иконка (Font Awesome):</label>
+                <input type="text" id="block-icon" placeholder="fa-cog" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="block-description">Описание:</label>
+                <textarea id="block-description" required></textarea>
+            </div>
+            
+            <h4>Детали</h4>
+            <div class="form-group">
+                <label for="block-explanation">Подробное объяснение:</label>
+                <textarea id="block-explanation"></textarea>
+            </div>
+            
+            <div class="form-group">
+                <label for="block-tasks">Задачи (по одной на строку):</label>
+                <textarea id="block-tasks"></textarea>
+            </div>
+            
+            <h4>Входные данные</h4>
+            <div class="form-group">
+                <label for="input-title">Заголовок:</label>
+                <input type="text" id="input-title" placeholder="Входные данные">
+            </div>
+            
+            <div class="form-group">
+                <label for="input-description">Описание:</label>
+                <textarea id="input-description"></textarea>
+            </div>
+            
+            <div class="form-group">
+                <label for="input-format">Формат:</label>
+                <select id="input-format">
+                    <option value="json">JSON</option>
+                    <option value="http">HTTP</option>
+                    <option value="text">Текст</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="input-data">Данные:</label>
+                <textarea id="input-data"></textarea>
+            </div>
+            
+            <h4>Выходные данные</h4>
+            <div class="form-group">
+                <label for="output-title">Заголовок:</label>
+                <input type="text" id="output-title" placeholder="Выходные данные">
+            </div>
+            
+            <div class="form-group">
+                <label for="output-description">Описание:</label>
+                <textarea id="output-description"></textarea>
+            </div>
+            
+            <div class="form-group">
+                <label for="output-format">Формат:</label>
+                <select id="output-format">
+                    <option value="json">JSON</option>
+                    <option value="http">HTTP</option>
+                    <option value="text">Текст</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="output-data">Данные:</label>
+                <textarea id="output-data"></textarea>
+            </div>
+            
+            <input type="hidden" id="edit-block-id" value="">
+            <button type="button" id="cancel-edit-button" style="display: none;">Отменить редактирование</button>
+            <button type="submit" id="submit-button">Добавить блок</button>
+            <button type="button" id="save-flow">Сохранить поток</button>
+        </form>
+    </div>
+
+    <!-- Модальное окно для вставки JSON -->
+    <div id="json-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Вставьте JSON-данные</h2>
+                <span class="close-modal">&times;</span>
+            </div>
+            <textarea id="json-input" placeholder="Вставьте здесь ваш JSON..."></textarea>
+            <div class="json-error" id="json-error">Ошибка: Некорректный формат JSON</div>
+            
+            <div class="json-controls">
+                <button type="button" id="validate-json">Проверить JSON</button>
+                <button type="button" id="load-json">Загрузить JSON</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/script.js"></script>
+</body>
+</html>
