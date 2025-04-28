@@ -1,0 +1,44 @@
+name: stroka-mvp
+
+services:
+  output-formatter:
+    build: ./output-formatter
+    container_name: output-formatter
+    ports:
+      - "8003:8003"
+    networks:
+      - stroka-network
+
+  vector-search:
+    build: ./vector-search
+    container_name: vector-search
+    ports:
+      - "8002:8002"
+    networks:
+      - stroka-network
+    depends_on:
+      - output-formatter
+
+  llm-processor:
+    build: ./llm-processor
+    container_name: llm-processor
+    ports:
+      - "8001:8001"
+    networks:
+      - stroka-network
+    depends_on:
+      - vector-search
+
+  input-gateway:
+    build: ./input-gateway
+    container_name: input-gateway
+    ports:
+      - "8000:8000"
+    networks:
+      - stroka-network
+    depends_on:
+      - llm-processor
+
+networks:
+  stroka-network:
+    name: stroka-network 
